@@ -1,4 +1,9 @@
 import mysql.connector
+import datetime
+from datetime import datetime
+datetime_obj = datetime.now()
+# extract the time from datetime_obj
+date = datetime_obj.date()
 con=mysql.connector.connect(host='localhost',user='root',password='',database='pythondb')
 cur=con.cursor()
 print("press 1 to create new Account")
@@ -50,10 +55,18 @@ if n==2:
         wamt=int(input("Enter Amount to withdraw"))
         if camt>=wamt:
             camt=camt-wamt
+            q=1
             q="update account set Amount='"+str(camt)+"' where acno='"+ac+"'"
             cur.execute(q)
             con.commit()
             print("After withdraw ",wamt," YOur Current balande is = ",camt)
+
+            #  code for transation table
+            ds="Withdraw"
+            tc=1
+            q1="insert into trans(acno,dt,amt,ds)values('"+ac+"','"+str(date)+"','"+str(wamt)+"','witdraw')"
+            cur.execute(q1)
+            con.commit()
         else:
             print("Insufficient balance")
     else:
@@ -78,6 +91,10 @@ if n==3:
         con.commit()
         print("Amount Added Scuccessfuly")
         print("your current Balance is ",camt)
+        # code for transaction
+        q1="insert into trans(acno,dt,amt,ds)values('"+ac+"','"+str(date)+"','"+str(damt)+"','diposite')"
+        cur.execute(q1)
+        con.commit()
 
     else:
         print("Invalide Credential ")  
@@ -109,9 +126,16 @@ if n==4:
                 q="update account set Amount='"+str(camt)+"' where acno='"+ac+"'"
                 cur.execute(q)
                 con.commit()
-
+                # code for transaction table
+                q1="insert into trans(acno,dt,amt,ds)values('"+ac+"','"+str(date)+"','"+str(tamt)+"','transfer')"
+                cur.execute(q1)
+                con.commit()
                 q="update account set Amount='"+str(camt2)+"' where acno='"+ac2+"'"
                 cur.execute(q)
+                con.commit()
+                # code for transaction table
+                q1="insert into trans(acno,dt,amt,ds)values('"+ac2+"','"+str(date)+"','"+str(tamt)+"','recieved')"
+                cur.execute(q1)
                 con.commit()
                 print("After Transfer ",tamt," Your Current balance is = ",camt)
             else:
@@ -166,14 +190,13 @@ if n==7:
         x=x+1
         
     if x>0:
-        print("Ac No.","\t",row[0])
-        print("Name","\t",row[2])
-        print("Gender","\t",row[4])
-        print("Email","\t",row[5])
-        print("Phone","\t",row[6])
-        print("State","\t",row[7])
-        print("City","\t",row[8])
-        print("Amount","\t",row[9])
+        q1="select * from trans where acno='"+ac+"'"
+        cur.execute(q1)
+        m=0
+        for row in cur:
+        
+            print(row[0],"\t",row[1],"\t",row[2],"\t",row[3],"\t",row[4])
+        
 
     else:
         print("Invalid Credential")
